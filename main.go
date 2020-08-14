@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 )
-
+//密钥
 var jwtSecret = "hello"
 
 type Claims struct {
@@ -16,6 +16,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+//生成token
 func GenerateToken(username,password string)(string,error){
 	nowtime:=time.Now()
 	expireTime:= nowtime.Add(3 *time.Hour)
@@ -24,7 +25,7 @@ func GenerateToken(username,password string)(string,error){
 		password,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
-			Issuer: "liubaorui",
+			Issuer: "mrliu",
 
 		},
 	}
@@ -34,6 +35,7 @@ func GenerateToken(username,password string)(string,error){
 	return token,err
 
 }
+//解析token
 func ParseToken(token string)(*Claims,error){
 	tokenClaims,err:=jwt.ParseWithClaims(token,&Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecret),nil
@@ -46,6 +48,7 @@ func ParseToken(token string)(*Claims,error){
 	return nil, err
 }
 
+//中间件验证token
 func JWTAuth(c *gin.Context)  {
 	token:=c.DefaultQuery("token","")
 	if token ==""{
@@ -59,14 +62,11 @@ func JWTAuth(c *gin.Context)  {
 	if err != nil {
 		c.JSON(http.StatusBadRequest,gin.H{
 			"msg":err.Error(),
-			"kkkkk":"这里",
 		})
 		c.Abort()
 		return
 	}
 	c.Set("claims",claims)
-
-
 }
 
 
@@ -75,7 +75,7 @@ func main() {
 	route := gin.Default()
 	route.POST("/", JWTAuth,func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "登录成功！",
+			"message": "hello world",
 		})
 
 	})
@@ -96,27 +96,20 @@ func main() {
 						"msg":"登录成功!",
 						"username":username,
 						"token":token,
-
 					})
 				}
-
 			}else {
 				c.JSON(http.StatusBadRequest,gin.H{
 					"msg":"账号或密码输入错误！",
 				})
 			}
-
 		}else {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"msg":"账号或密码没有输入！",
 			})
 		}
 
-
 	})
-
-
-
 
 	route.Run() // listen and serve on 0.0.0.0:8080
 }
